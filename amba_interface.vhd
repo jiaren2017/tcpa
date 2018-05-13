@@ -215,7 +215,7 @@ architecture Behavioral of amba_interface is
             EN_ELASTIC_BUFFER                     : boolean               := FALSE;
             
             COMPONENT_ADDRESS                     : std_logic_vector(31 downto 0);
-            hindex                                : std_logic_vector(1 downto 0);               
+            hindex                                : integer;               
             hirq                                  : integer               := 0
             -- haddr                                 : integer               := 0;
             -- hmask                                 : integer               := 16#fff#;
@@ -259,7 +259,7 @@ architecture Behavioral of amba_interface is
 			ahb_rstn                 : in  std_logic;
             
             -- Input Signals from AMBA Interface to AHB_AG_Buffer_Wrapper        --ahbsi : in  ahb_slv_in_type;
-            IF_AG_hsel                  : in std_logic_vector(1 downto 0);     -- select      east: "00", west: "01", south: "10", north: "11"
+            IF_AG_hsel                  : in std_logic_vector(0 to 3);          -- slave select
             IF_AG_haddr                 : in std_logic_vector(31 downto 0);    -- address bus (byte)
             IF_AG_hwrite                : in std_ulogic;                       -- read/write
             IF_AG_htrans                : in std_logic_vector(1 downto 0);     -- transfer type
@@ -272,7 +272,7 @@ architecture Behavioral of amba_interface is
             AG_IF_hrdata                : out std_logic_vector(31 downto 0);     -- read data bus
             AG_IF_hsplit                : out std_logic_vector(15 downto 0);     -- split completion
             AG_IF_hirq                  : out std_ulogic;                        -- interrupt bus
-            AG_IF_hindex                : out std_logic_vector(1 downto 0)     -- select      east: "00", west: "01", south: "10", north: "11"  diagnostic use only
+            AG_IF_hindex                : out integer range 0 to 3               -- diagnostic use only   
             -- AG_IF_hconfig               : out ahb_config_type;                   -- memory access reg.
 
 		);
@@ -298,7 +298,7 @@ architecture Behavioral of amba_interface is
 			stop        : in  std_logic;
             
 			--          Input Signals from AMBA Interface               --  apbi : in apb_slv_in_type;
-            IF_gc_psel                   : in std_logic;                                        -- slave select
+            IF_gc_psel                   : in std_ulogic;  -- slave select
             IF_gc_penable                : in std_ulogic;                                       -- enable,  strobe
             IF_gc_paddr                  : in std_logic_vector(31 downto 0);                    -- address bus (byte)
             IF_gc_pwrite                 : in std_ulogic;                                       -- write
@@ -445,7 +445,7 @@ architecture Behavioral of amba_interface is
             tcpa_config_rst              : out std_logic;
             
             -- Input Signals from AMBA Interface            -- apbi  : in  apb_slv_in_type;
-            IF_HwInterFace_psel          : in std_ulogic;                                        -- slave select
+            IF_HwInterFace_psel          : in std_ulogic;  -- slave select
             IF_HwInterFace_penable       : in std_ulogic;                                       -- enable,  strobe
             IF_HwInterFace_paddr         : in std_logic_vector(31 downto 0);                    -- address bus (byte)
             IF_HwInterFace_pwrite        : in std_ulogic;                                       -- write
@@ -538,7 +538,7 @@ architecture Behavioral of amba_interface is
 --			fault_injection          : in t_fault_injection_module; 
             
             -- Input Signals from AMBA Interface            -- apbi : in  apb_slv_in_type;
-            IF_ReconfReg_psel        : in std_ulogic;                                       -- slave select
+            IF_ReconfReg_psel        : in std_ulogic;  -- slave select
             IF_ReconfReg_penable     : in std_ulogic;                                       -- enable,  strobe
             IF_ReconfReg_paddr       : in std_logic_vector(31 downto 0);                    -- address bus (byte)
             IF_ReconfReg_pwrite      : in std_ulogic;                                       -- write
@@ -799,7 +799,7 @@ architecture Behavioral of amba_interface is
     
     ---------------------    reconfig_registers    -------------------------
         -- Input Signals from AMBA Interface to reconfig_registers
-    signal    IF_ReconfReg_psel        :  std_ulogic;                                       -- select   
+    signal    IF_ReconfReg_psel        :  std_ulogic;  -- slave select
     signal    IF_ReconfReg_penable     :  std_ulogic;                                       -- enable,  strobe
     signal    IF_ReconfReg_paddr       :  std_logic_vector(31 downto 0);                    -- address bus (byte)
     signal    IF_ReconfReg_pwrite      :  std_ulogic;                                       -- write
@@ -814,7 +814,7 @@ architecture Behavioral of amba_interface is
         ------------------------------------------------------------------------
         ---------------------  top_hardware_interface  ------------------------- 
         -- Input Signals from AMBA Interface to top_hardware_interface
-    signal    IF_HwInterFace_psel          :  std_ulogic;                                       -- select   
+    signal    IF_HwInterFace_psel          :  std_ulogic;  -- slave select
     signal    IF_HwInterFace_penable       :  std_ulogic;                                       -- enable,  strobe
     signal    IF_HwInterFace_paddr         :  std_logic_vector(31 downto 0);                    -- address bus (byte)
     signal    IF_HwInterFace_pwrite        :  std_ulogic;                                       -- write
@@ -828,7 +828,7 @@ architecture Behavioral of amba_interface is
         --------------------------------------------------------------------------
         ---------------------  gc_apb_slave_mem_wrapper  ------------------------- 
         -- Input Signals from AMBA Interface to gc_apb_slave_mem_wrapper
-    signal    IF_gc_psel                   :  std_ulogic;                                       -- select   
+    signal    IF_gc_psel                   :  std_ulogic;  -- slave select
     signal    IF_gc_penable                :  std_ulogic;                                       -- enable,  strobe
     signal    IF_gc_paddr                  :  std_logic_vector(31 downto 0);                    -- address bus (byte)
     signal    IF_gc_pwrite                 :  std_ulogic;                                       -- write
@@ -843,7 +843,7 @@ architecture Behavioral of amba_interface is
         ---------------------         RBuffer_hirq       -------------------------
         -- Input Signals from AMBA Interface to RBuffer_hirq
     signal    IF_RBuff_hirq_hready        :  std_ulogic; 
-    signal    IF_RBuff_hirq_hsel          :  std_ulogic;                                       -- select   
+    signal    IF_RBuff_hirq_hsel          :  std_ulogic;  -- slave select
     signal    IF_RBuff_hirq_haddr         :  std_logic_vector(31 downto 0); -- address bus (byte)
     signal    IF_RBuff_hirq_hwrite        :  std_ulogic; -- read/write
     signal    IF_RBuff_hirq_htrans        :  std_logic_vector(1 downto 0); -- transfer type
@@ -861,7 +861,7 @@ architecture Behavioral of amba_interface is
         --------------------------------------------------------------------------
         ---------------------    AHB_AG_Buffer_Wrapper   -------------------------
         -- Input Signals from AMBA Interface to AHB_AG_Buffer_Wrapper
-    signal    IF_AG_hsel                  :  std_logic_vector(1 downto 0);     -- select      east: "00", west: "01", south: "10", north: "11"
+    signal    IF_AG_hsel                  :  std_logic_vector(0 to 3);         -- slave select
     signal    IF_AG_haddr                 :  std_logic_vector(31 downto 0);    -- address bus (byte)
     signal    IF_AG_hwrite                :  std_ulogic;                       -- read/write
     signal    IF_AG_htrans                :  std_logic_vector(1 downto 0);     -- transfer type
@@ -870,6 +870,18 @@ architecture Behavioral of amba_interface is
 
       
     -- Output Signals from AHB_AG_Buffer_Wrapper to AMBA Interface
+    
+    signal    AG_IF_hready                :  std_ulogic;                        -- transfer done
+    signal    AG_IF_hresp                 :  std_logic_vector(1 downto 0);      -- response type
+    signal    AG_IF_hrdata                :  std_logic_vector(31 downto 0);     -- read data bus
+    signal    AG_IF_hsplit                :  std_logic_vector(15 downto 0);     -- split completion
+    signal    AG_IF_hirq                  :  std_ulogic;                        -- interrupt bus
+    signal    AG_IF_hindex                :  integer range 0 to 3;              -- diagnostic use only      east: "00", west: "01", south: "10", north: "11"  
+    
+    
+    
+    
+    
     -- from EAST      
     signal    AG_IF_ahbso_EAST_valid           :  std_ulogic;
     
@@ -906,6 +918,7 @@ begin
 		CHANNEL_COUNT_SOUTH      => AG_BUFFER_SOUTH.CHANNEL_COUNT,
 		CHANNEL_COUNT_EAST       => AG_BUFFER_EAST.CHANNEL_COUNT,
         COMPONENT_ADDRESS        => RBuffer_hirq_addr,
+        hindex                   => RBuffer_hirq_ID,
         hirq                     => RBUFFER_HIRQ_AHB_IRQ
         )
 	  port map(
@@ -930,7 +943,8 @@ begin
         RBuff_hirq_IF_hresp         => RBuff_hirq_IF_hresp,
         RBuff_hirq_IF_hrdata        => RBuff_hirq_IF_hrdata,
         RBuff_hirq_IF_hsplit        => RBuff_hirq_IF_hsplit,
-        RBuff_hirq_IF_hirq          => RBuff_hirq_IF_hirq
+        RBuff_hirq_IF_hirq          => RBuff_hirq_IF_hirq,
+        RBuff_hirq_IF_hindex        => RBuff_hirq_IF_hindex
         );
 
     -------------------------------------------------------------------------------
@@ -964,7 +978,9 @@ begin
 			    BUFFER_CHANNEL_ADDR_WIDTH             => CUR_DEFAULT_BUFFER_CHANNEL_ADDR_WIDTH,
 	            BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO => BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO,
 		        EN_ELASTIC_BUFFER                     => EN_ELASTIC_BUFFER, 
+                
                 COMPONENT_ADDRESS                     => AG_Buffer_Wrapper_NORTH,
+                hindex                                => AG_Buffer_NORTH_ID,
                 hirq                                  => AG_BUFFER_NORTH.AG_hirq
 			)
 			port map(
@@ -996,19 +1012,20 @@ begin
 				ahb_rstn                 => ahb_rstn,    --ahb_rstn_in,
                 
 				--ahbsi                    => ahbsi_in,
-                IF_AG_NORTH_hsel         => IF_AG_NORTH_hsel,
-                IF_AG_NORTH_haddr        => IF_AG_NORTH_haddr,
-                IF_AG_NORTH_hwrite       => IF_AG_NORTH_hwrite,
-                IF_AG_NORTH_htrans       => IF_AG_NORTH_htrans,
-                IF_AG_NORTH_hwdata       => IF_AG_NORTH_hwdata,
-                IF_AG_NORTH_hready       => IF_AG_NORTH_hready,
+                IF_AG_hsel               => IF_AG_hsel,
+                IF_AG_haddr              => IF_AG_haddr,
+                IF_AG_hwrite             => IF_AG_hwrite,
+                IF_AG_htrans             => IF_AG_htrans,
+                IF_AG_hwdata             => IF_AG_hwdata,
+                IF_AG_hready             => IF_AG_hready,
                 
 				--ahbso                    => ahbso_out_NORTH
-                AG_IF_NORTH_hready         => AG_IF_NORTH_hready,
-                AG_IF_NORTH_hresp          => AG_IF_NORTH_hresp,
-                AG_IF_NORTH_hrdata         => AG_IF_NORTH_hrdata,
-                AG_IF_NORTH_hsplit         => AG_IF_NORTH_hsplit,
-                AG_IF_NORTH_hirq           => AG_IF_NORTH_hirq
+                AG_IF_hready             => AG_IF_hready,
+                AG_IF_hresp              => AG_IF_hresp,
+                AG_IF_hrdata             => AG_IF_hrdata,
+                AG_IF_hsplit             => AG_IF_hsplit,
+                AG_IF_hirq               => AG_IF_hirq,
+                AG_IF_hindex             => AG_IF_hindex    -- diagnostic use only      east: "00", west: "01", south: "10", north: "11"  
 			);
 	end generate;
 	NO_BUFFER_NORTH : if CFG_BUFFER_NORTH = 0 generate
@@ -1051,7 +1068,9 @@ begin
 			    BUFFER_CHANNEL_ADDR_WIDTH             => CUR_DEFAULT_BUFFER_CHANNEL_ADDR_WIDTH,
 	            BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO => BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO,
 		        EN_ELASTIC_BUFFER                     => EN_ELASTIC_BUFFER, 
+                
                 COMPONENT_ADDRESS                     => AG_Buffer_Wrapper_SOUTH,
+                hindex                                => AG_Buffer_SOUTH_ID,
                 hirq                                  => AG_BUFFER_SOUTH.AG_hirq
 			)
 			port map(
@@ -1083,19 +1102,20 @@ begin
 				ahb_rstn                 => ahb_rstn,    --ahb_rstn_in,
                 
 				--ahbsi                    => ahbsi_in,
-                IF_AG_SOUTH_hsel         => IF_AG_SOUTH_hsel,
-                IF_AG_SOUTH_haddr        => IF_AG_SOUTH_haddr,
-                IF_AG_SOUTH_hwrite       => IF_AG_SOUTH_hwrite,
-                IF_AG_SOUTH_htrans       => IF_AG_SOUTH_htrans,
-                IF_AG_SOUTH_hwdata       => IF_AG_SOUTH_hwdata,
-                IF_AG_SOUTH_hready       => IF_AG_SOUTH_hready,
+                IF_AG_hsel               => IF_AG_hsel,
+                IF_AG_haddr              => IF_AG_haddr,
+                IF_AG_hwrite             => IF_AG_hwrite,
+                IF_AG_htrans             => IF_AG_htrans,
+                IF_AG_hwdata             => IF_AG_hwdata,
+                IF_AG_hready             => IF_AG_hready,
                 
-				--ahbso                    => ahbso_out_SOUTH
-                AG_IF_SOUTH_hready         => AG_IF_SOUTH_hready,
-                AG_IF_SOUTH_hresp          => AG_IF_SOUTH_hresp,
-                AG_IF_SOUTH_hrdata         => AG_IF_SOUTH_hrdata,
-                AG_IF_SOUTH_hsplit         => AG_IF_SOUTH_hsplit,
-                AG_IF_SOUTH_hirq           => AG_IF_SOUTH_hirq
+				--ahbso                    => ahbso_out_NORTH
+                AG_IF_hready             => AG_IF_hready,
+                AG_IF_hresp              => AG_IF_hresp,
+                AG_IF_hrdata             => AG_IF_hrdata,
+                AG_IF_hsplit             => AG_IF_hsplit,
+                AG_IF_hirq               => AG_IF_hirq,
+                AG_IF_hindex             => AG_IF_hindex    -- diagnostic use only      east: "00", west: "01", south: "10", north: "11"  
 			);
 	end generate;
 	NO_BUFFER_SOUTH : if CFG_BUFFER_SOUTH = 0 generate
@@ -1137,7 +1157,9 @@ begin
 			    BUFFER_CHANNEL_ADDR_WIDTH             => CUR_DEFAULT_BUFFER_CHANNEL_ADDR_WIDTH,
 	            BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO => BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO,
 		        EN_ELASTIC_BUFFER                     => EN_ELASTIC_BUFFER, 
+                
                 COMPONENT_ADDRESS                     => AG_Buffer_Wrapper_EAST,
+                hindex                                => AG_Buffer_EAST_ID,  
                 hirq                                  => AG_BUFFER_EAST.AG_hirq
 			)
 			port map(
@@ -1169,19 +1191,20 @@ begin
 				ahb_rstn                 => ahb_rstn,    --ahb_rstn_in,
                 
 				--ahbsi                    => ahbsi_in,
-                IF_AG_EAST_hsel         => IF_AG_EAST_hsel,
-                IF_AG_EAST_haddr        => IF_AG_EAST_haddr,
-                IF_AG_EAST_hwrite       => IF_AG_EAST_hwrite,
-                IF_AG_EAST_htrans       => IF_AG_EAST_htrans,
-                IF_AG_EAST_hwdata       => IF_AG_EAST_hwdata,
-                IF_AG_EAST_hready       => IF_AG_EAST_hready,
+                IF_AG_hsel               => IF_AG_hsel,
+                IF_AG_haddr              => IF_AG_haddr,
+                IF_AG_hwrite             => IF_AG_hwrite,
+                IF_AG_htrans             => IF_AG_htrans,
+                IF_AG_hwdata             => IF_AG_hwdata,
+                IF_AG_hready             => IF_AG_hready,
                 
-				--ahbso                    => ahbso_out_EAST
-                AG_IF_EAST_hready         => AG_IF_EAST_hready,
-                AG_IF_EAST_hresp          => AG_IF_EAST_hresp,
-                AG_IF_EAST_hrdata         => AG_IF_EAST_hrdata,
-                AG_IF_EAST_hsplit         => AG_IF_EAST_hsplit,
-                AG_IF_EAST_hirq           => AG_IF_EAST_hirq
+				--ahbso                    => ahbso_out_NORTH
+                AG_IF_hready             => AG_IF_hready,
+                AG_IF_hresp              => AG_IF_hresp,
+                AG_IF_hrdata             => AG_IF_hrdata,
+                AG_IF_hsplit             => AG_IF_hsplit,
+                AG_IF_hirq               => AG_IF_hirq,
+                AG_IF_hindex             => AG_IF_hindex    -- diagnostic use only      east: "00", west: "01", south: "10", north: "11"  
 			);
 	end generate;
 	NO_BUFFER_EAST : if CFG_BUFFER_EAST = 0 generate
@@ -1223,7 +1246,9 @@ begin
 			    BUFFER_CHANNEL_ADDR_WIDTH             => CUR_DEFAULT_BUFFER_CHANNEL_ADDR_WIDTH,
 	            BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO => BUFFER_CHANNEL_SIZES_ARE_POWER_OF_TWO,
 		        EN_ELASTIC_BUFFER                     => EN_ELASTIC_BUFFER, 
+                
                 COMPONENT_ADDRESS                     => AG_Buffer_Wrapper_WEST,
+                hindex                                => AG_Buffer_WEST_ID,
                 hirq                                  => AG_BUFFER_WEST.AG_hirq
 			)
 			port map(
@@ -1255,19 +1280,20 @@ begin
 				ahb_rstn                 => ahb_rstn,    --ahb_rstn_in,
                 
 				--ahbsi                    => ahbsi_in,
-                IF_AG_WEST_hsel         => IF_AG_WEST_hsel,
-                IF_AG_WEST_haddr        => IF_AG_WEST_haddr,
-                IF_AG_WEST_hwrite       => IF_AG_WEST_hwrite,
-                IF_AG_WEST_htrans       => IF_AG_WEST_htrans,
-                IF_AG_WEST_hwdata       => IF_AG_WEST_hwdata,
-                IF_AG_WEST_hready       => IF_AG_WEST_hready,
+                IF_AG_hsel               => IF_AG_hsel,
+                IF_AG_haddr              => IF_AG_haddr,
+                IF_AG_hwrite             => IF_AG_hwrite,
+                IF_AG_htrans             => IF_AG_htrans,
+                IF_AG_hwdata             => IF_AG_hwdata,
+                IF_AG_hready             => IF_AG_hready,
                 
-				--ahbso                    => ahbso_out_WEST
-                AG_IF_WEST_hready         => AG_IF_WEST_hready,
-                AG_IF_WEST_hresp          => AG_IF_WEST_hresp,
-                AG_IF_WEST_hrdata         => AG_IF_WEST_hrdata,
-                AG_IF_WEST_hsplit         => AG_IF_WEST_hsplit,
-                AG_IF_WEST_hirq           => AG_IF_WEST_hirq
+				--ahbso                    => ahbso_out_NORTH
+                AG_IF_hready             => AG_IF_hready,
+                AG_IF_hresp              => AG_IF_hresp,
+                AG_IF_hrdata             => AG_IF_hrdata,
+                AG_IF_hsplit             => AG_IF_hsplit,
+                AG_IF_hirq               => AG_IF_hirq,
+                AG_IF_hindex             => AG_IF_hindex    -- diagnostic use only      east: "00", west: "01", south: "10", north: "11"  
 			);
 	end generate;
 	NO_BUFFER_WEST : if CFG_BUFFER_WEST = 0 generate
@@ -1301,9 +1327,9 @@ begin
 					sig_wppa_ctrl_input.external_bottom_south_in_ctrl(i) <= TCPA_ic_in(0);
 			end loop;
 			
-			
+			--gc_restart_ext  <= restart_ext_north or restart_ext_east or restart_ext_south or restart_ext_west or tcpa_start;
 			gc_restart_ext <= '0';
-			
+			--gc_start_mux_out <= gc_start_input when gc_start_mux_select = '1' else gc_start;
 			if gc_start_mux_select = '1' then
 				gc_start_mux_out <= gc_start_input;
 			else
@@ -1375,12 +1401,22 @@ begin
 		);
 		sig_enable_tcpa_i <= '0' when (gc_stop or AG_stop or tcpa_stop) = '1' else sig_enable_tcpa;
         
+	-- Global Controller - Configuaration Memory
+	--Srinivas
+	--GC_apbo_out <= apb_none;
+        
+        
     -------------------------------------------------------------------------------
 	-------------------------------------------------------------------------------    
     
 	test_gc_apb_slave_mem_wrapper : gc_apb_slave_mem_wrapper
 		generic map(
-            COMPONENT_ADDRESS  : std_logic_vector(31 downto 0) : gc_apb_slave_mem_wrapper_addr
+            COMPONENT_ADDRESS  => gc_apb_slave_mem_wrapper_addr,
+			pindex  => gc_apb_slave_mem_wrapper_ID,
+			-- paddr       : integer := 0;
+			-- pmask       : integer := 16#ff0#;
+            pirq        : integer := 0,
+			NO_OF_WORDS : integer := 1024
 		)
 		port map(
 			rstn        => gc_rstn,     -- same rstn as ahb rstn
@@ -1398,6 +1434,7 @@ begin
 --          apbo        => GC_apbo_out,
             gc_IF_pirq                   => gc_IF_pirq,
             gc_IF_prdata                 => gc_IF_prdata,
+            gc_IF_pindex                 => gc_IF_pindex,
             
 			conf_en     => gc_conf_en,
 			rnready     => gc_rnready,
@@ -1582,7 +1619,10 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
   
 	hw_sw_interface : top_hardware_interface
 		generic map(
-            COMPONENT_ADDRESS  : std_logic_vector(31 downto 0) : top_hardware_interface_addr
+			pindex  => top_hw_interface_ID,
+			-- paddr  : integer := 13;
+			-- pmask  : integer := 16#fff#;
+            COMPONENT_ADDRESS => top_hardware_interface_addr
             )
 		port map(
 			rst                          => ahb_rstn,     --ahb_rstn_in,
@@ -1612,7 +1652,9 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
             
             -- apbo                         => CM_apbo
             HwInterFace_IF_pirq          => HwInterFace_IF_pirq,
-            HwInterFace_IF_prdata        => HwInterFace_IF_prdata
+            HwInterFace_IF_prdata        => HwInterFace_IF_prdata,
+            HwInterFace_IF_pindex        => HwInterFace_IF_pindex
+            
 		);
 
     -------------------------------------------------------------------------------
@@ -1620,9 +1662,11 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
   
 	reconfig_regs : reconfig_registers
 		generic map(
-            COMPONENT_ADDRESS  : std_logic_vector(31 downto 0) : reconfig_registers_addr
+			pindex => reconfig_registers_ID,
+			-- paddr  : integer := 12;
+			-- pmask  : integer := 16#fff#;
+            COMPONENT_ADDRESS  => reconfig_registers_addr
             )
-            
 		port map(
 			rst                      => ahb_rstn,    --ahb_rstn_in,
 			gc_reset                 => gc_reset,
@@ -1659,26 +1703,57 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
 
             -- apbo                     => reconfig_regs_apbo
             ReconfReg_IF_pirq        => ReconfReg_IF_pirq,
-            ReconfReg_IF_prdata      => ReconfReg_IF_prdata
-
+            ReconfReg_IF_prdata      => ReconfReg_IF_prdata,
+            ReconfReg_IF_pindex      => ReconfReg_IF_pindex
 		);
 
-        
+	debug_tcpa_0 : if CFG_ENABLE_TCPA = 1 generate
+		inst_tcpa_top : WPPA_TOP
+			port map(
+				clk                          => TCPA_clk,
+				rst                          => tcpa_rst,
+				wppa_bus_input_interface     => sig_wppa_bus_input_interface,
+				wppa_bus_output_interface    => sig_wppa_bus_output_interface,
+				wppa_data_input              => sig_wppa_data_input,
+				wppa_data_output             => sig_wppa_data_output,
+				wppa_ctrl_input              => sig_wppa_ctrl_input,
+				wppa_ctrl_output             => sig_wppa_ctrl_output,
+				wppa_memory_input_interface  => sig_wppa_memory_input_interface,
+				wppa_memory_output_interface => sig_wppa_memory_output_interface,
+				-- fault_injection              => sig_fault_injection,
+				error_status                 => sig_error_status,
+				tcpa_config_done             => sig_configuration_done,
+				tcpa_config_done_vector      => sig_configuration_done_vector,
+				ctrl_programmable_depth      => sig_ctrl_programmable_depth,
+				en_programmable_fd_depth     => sig_en_programmable_fd_depth,
+				programmable_fd_depth        => sig_programmable_fd_depth,
+				enable_tcpa                  => sig_enable_tcpa_i,
+				pc_debug_out                 => sig_pc_debug_out,
+				icp_program_interface        => sig_icp_program_interface
+				-- invasion_input               => sig_invasion_input,
+				-- invasion_output              => sig_invasion_output,
+				-- parasitary_invasion_input    => sig_parasitary_invasion_input,
+				-- parasitary_invasion_output   => sig_parasitary_invasion_output
+			);
+	end generate;
+    
+    
 	REVERSE_INDEX_VECTOR : for i in 0 to DIMENSION - 1 generate
 		AG_index_vector(ITERATION_VARIABLE_WIDTH + (i * INDEX_VECTOR_DATA_WIDTH) - 1 downto i * INDEX_VECTOR_DATA_WIDTH) <= gc_iteration_vector_current(i * ITERATION_VARIABLE_WIDTH to (i + 1) * ITERATION_VARIABLE_WIDTH - 1);
 		AG_index_vector((i + 1) * INDEX_VECTOR_DATA_WIDTH - 1)                                                           <= '0';
 	end generate REVERSE_INDEX_VECTOR;
 
+    
+    
+    
+    
 	-------------------------------------------------------   generate addr_array_index to check which component is of interest
     addr_mask  <= ahbsi.haddr and mask_intern;
     addr_srl   <= to_stdlogicvector(to_bitvector(addr_mask) srl COMP_SIZE);
     addr_array_index <= to_integer(unsigned(addr_srl));  
-	-------------------------------------------------------------------------------
-    
-
     
     
-    --  generate address array for all components
+-----------------------------------------------------------------  generate address - array
     gen_addr_array : process(ahb_clk, ahb_rstn)
     begin
         if(ahb_clk'event and ahb_clk='1') then
@@ -1692,24 +1767,17 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
     end process gen_addr_array;
     
     
-    -- find out which component is called
+-----------------------------------------------------------------  find out the component address of interest
     arbitration : process (ahb_clk, ahb_rstn, ahbsi, addr_array_index)
     begin
         if(ahb_clk'event and ahb_clk='1') then
             if ahb_rstn = '0' then 
-                IF_component_addr      <= (others => '0');
-                IF_tcpa_enable    <= '0';
-                IF_tcpa_data      <= (others => '0');
+                IF_component_addr        <= (others => '0');
                 report "********* ahb_rstn is ON *********";
             else
                 IF_component_addr      <= (others => '0');
-                IF_tcpa_enable    <= '0';
-                IF_tcpa_data      <= (others => '0');
-
-                if ahbsi.hsel(hindex) = '1' then     -- check whether the amba_interface is called
-                    IF_component_addr      <= component_addr_array(addr_array_index);        
-                    IF_tcpa_enable    <= '1';
-	 	    IF_tcpa_data      <= ahbsi.hwdata;
+                if ahbsi.hsel(hindex) = '1' then            -- check whether the amba_interface is called
+                    IF_component_addr  <= component_addr_array(addr_array_index);
                     report "********* addr_array_index is " & integer'image(addr_array_index) & " *********";
                 end if;
             end if;
@@ -1717,7 +1785,7 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
     end process arbitration;
             
         
-    output_to_comp: process (IF_component_addr)      
+    output_to_component: process (IF_component_addr)      
     begin
         case IF_component_addr is
             when RBuffer_hirq_addr =>  ---------------------        Component: RBuffer_hirq       
@@ -1730,42 +1798,42 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
 
             when AG_Buffer_Wrapper_NORTH => ---------------------   Component: AHB_AG_Buffer_Wrapper_NORTH
                 if AG_IF_ahbso_NORTH_valid = '1' then
-                    IF_AG_NORTH_hsel        <=  '1';
-                    IF_AG_NORTH_haddr       <=  ahbsi.haddr;
-                    IF_AG_NORTH_hwrite      <=  ahbsi.hwrite;
-                    IF_AG_NORTH_htrans      <=  ahbsi.htrans;
-                    IF_AG_NORTH_hwdata      <=  ahbsi.hwdata;
-                    IF_AG_NORTH_hready      <=  ahbsi.hready;
+                    IF_AG_hsel        <=  "0001";
+                    IF_AG_haddr       <=  ahbsi.haddr;
+                    IF_AG_hwrite      <=  ahbsi.hwrite;
+                    IF_AG_htrans      <=  ahbsi.htrans;
+                    IF_AG_hwdata      <=  ahbsi.hwdata;
+                    IF_AG_hready      <=  ahbsi.hready;
                 end if;
                 
             when AG_Buffer_Wrapper_SOUTH => ---------------------   Component: AHB_AG_Buffer_Wrapper_SOUTH
                 if AG_IF_ahbso_SOUTH_valid = '1' then
-                    IF_AG_SOUTH_hsel        <=  '1';
-                    IF_AG_SOUTH_haddr       <=  ahbsi.haddr;
-                    IF_AG_SOUTH_hwrite      <=  ahbsi.hwrite;
-                    IF_AG_SOUTH_htrans      <=  ahbsi.htrans;
-                    IF_AG_SOUTH_hwdata      <=  ahbsi.hwdata;
-                    IF_AG_SOUTH_hready      <=  ahbsi.hready;
+                    IF_AG_hsel        <=  "0010";
+                    IF_AG_haddr       <=  ahbsi.haddr;
+                    IF_AG_hwrite      <=  ahbsi.hwrite;
+                    IF_AG_htrans      <=  ahbsi.htrans;
+                    IF_AG_hwdata      <=  ahbsi.hwdata;
+                    IF_AG_hready      <=  ahbsi.hready;
                 end if;
                 
             when AG_Buffer_Wrapper_WEST => ---------------------   Component: AHB_AG_Buffer_Wrapper_WEST
                 if AG_IF_ahbso_WEST_valid = '1' then
-                    IF_AG_WEST_hsel        <=  '1';
-                    IF_AG_WEST_haddr       <=  ahbsi.haddr;
-                    IF_AG_WEST_hwrite      <=  ahbsi.hwrite;
-                    IF_AG_WEST_htrans      <=  ahbsi.htrans;
-                    IF_AG_WEST_hwdata      <=  ahbsi.hwdata;
-                    IF_AG_WEST_hready      <=  ahbsi.hready;
+                    IF_AG_hsel        <=  "0100";
+                    IF_AG_haddr       <=  ahbsi.haddr;
+                    IF_AG_hwrite      <=  ahbsi.hwrite;
+                    IF_AG_htrans      <=  ahbsi.htrans;
+                    IF_AG_hwdata      <=  ahbsi.hwdata;
+                    IF_AG_hready      <=  ahbsi.hready;
                 end if;
                 
             when AG_Buffer_Wrapper_EAST => ---------------------   Component: AHB_AG_Buffer_Wrapper_EAST
                 if AG_IF_ahbso_EAST_valid = '1' then
-                    IF_AG_EAST_hsel        <=  '1';
-                    IF_AG_EAST_haddr       <=  ahbsi.haddr;
-                    IF_AG_EAST_hwrite      <=  ahbsi.hwrite;
-                    IF_AG_EAST_htrans      <=  ahbsi.htrans;
-                    IF_AG_EAST_hwdata      <=  ahbsi.hwdata;
-                    IF_AG_EAST_hready      <=  ahbsi.hready;
+                    IF_AG_hsel        <=  "1000";
+                    IF_AG_haddr       <=  ahbsi.haddr;
+                    IF_AG_hwrite      <=  ahbsi.hwrite;
+                    IF_AG_htrans      <=  ahbsi.htrans;
+                    IF_AG_hwdata      <=  ahbsi.hwdata;
+                    IF_AG_hready      <=  ahbsi.hready;
                 end if;
                  
             when top_hardware_interface_addr => --------------------- Component: top_hardware_interface       
@@ -1797,33 +1865,12 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
                 IF_RBuff_hirq_htrans    <=  (others=>'0');
                 IF_RBuff_hirq_hwdata    <=  (others=>'0');
             
-                IF_AG_NORTH_hsel        <=  '0';
-                IF_AG_NORTH_haddr       <=  (others=>'0');
-                IF_AG_NORTH_hwrite      <=  '0';
-                IF_AG_NORTH_htrans      <=  (others=>'0');
-                IF_AG_NORTH_hwdata      <=  (others=>'0');
-                IF_AG_NORTH_hready      <=  '0';
-                
-                IF_AG_SOUTH_hsel        <=  '0';
-                IF_AG_SOUTH_haddr       <=  (others=>'0');
-                IF_AG_SOUTH_hwrite      <=  '0';
-                IF_AG_SOUTH_htrans      <=  (others=>'0');
-                IF_AG_SOUTH_hwdata      <=  (others=>'0');
-                IF_AG_SOUTH_hready      <=  '0';
-                
-                IF_AG_WEST_hsel        <=  '0';
-                IF_AG_WEST_haddr       <=  (others=>'0');
-                IF_AG_WEST_hwrite      <=  '0';
-                IF_AG_WEST_htrans      <=  (others=>'0');
-                IF_AG_WEST_hwdata      <=  (others=>'0');
-                IF_AG_WEST_hready      <=  '0';
-                
-                IF_AG_EAST_hsel        <=  '0';
-                IF_AG_EAST_haddr       <=  (others=>'0');
-                IF_AG_EAST_hwrite      <=  '0';
-                IF_AG_EAST_htrans      <=  (others=>'0');
-                IF_AG_EAST_hwdata      <=  (others=>'0');
-                IF_AG_EAST_hready      <=  '0';
+                IF_AG_hsel              <=  (others=>'0');
+                IF_AG_haddr             <=  (others=>'0');
+                IF_AG_hwrite            <=  '0';
+                IF_AG_htrans            <=  (others=>'0');
+                IF_AG_hwdata            <=  (others=>'0');
+                IF_AG_hready            <=  '0';
                 
                 IF_HwInterFace_psel       <=  '0';
                 IF_HwInterFace_penable    <=  '0';
@@ -1845,17 +1892,105 @@ BUFFERS_AND_TCPA_CONNECTION : if CFG_ENABLE_TCPA = 1 generate
         end case;        
     end process;
     
-
-            
-            
-    -- abhso configuration
-	ahbso.hrdata         <= tcpa_IF_data;
-	ahbso.hready         <= '1';
-	ahbso.hresp          <= "00";       -- status: okay
-	ahbso.hirq           <= (others => '0');
-	ahbso.hsplit         <= (others => '0');
-	ahbso.hconfig        <= AMBA_IF_CONFIG;
-	ahbso.hindex         <= hindex;
+-----------------------------------------------------------------  configure the output signals to bus       -- abhso configuration
+    output_to_bus: process (IF_component_addr)      
+    begin
+        case IF_component_addr is
+            when RBuffer_hirq_addr =>  ---------------------        Component: RBuffer_hirq     
+                if RBuff_hirq_IF_hindex = RBuffer_hirq_ID then      -- check ID
+                    ahbso.hrdata         <= RBuff_hirq_IF_hrdata;
+                    ahbso.hready         <= RBuff_hirq_IF_hready;
+                    ahbso.hresp          <= RBuff_hirq_IF_hresp;       
+                    ahbso.hirq           <= RBuff_hirq_IF_hirq;
+                    ahbso.hsplit         <= RBuff_hirq_IF_hsplit;
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                end if;
+                
+            when AG_Buffer_Wrapper_NORTH => ---------------------   Component: AHB_AG_Buffer_Wrapper_NORTH
+                if AG_IF_hindex = AG_Buffer_NORTH_ID and AG_IF_ahbso_NORTH_valid = '1' then      -- check ID
+                    ahbso.hrdata         <= AG_IF_hrdata;
+                    ahbso.hready         <= AG_IF_hready;
+                    ahbso.hresp          <= AG_IF_hresp;       
+                    ahbso.hirq           <= AG_IF_hirq;
+                    ahbso.hsplit         <= AG_IF_hsplit;
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                end if;
+                
+            when AG_Buffer_Wrapper_SOUTH => ---------------------   Component: AHB_AG_Buffer_Wrapper_SOUTH
+                if AG_IF_hindex = AG_Buffer_SOUTH_ID and AG_IF_ahbso_SOUTH_valid = '1' then      -- check ID
+                    ahbso.hrdata         <= AG_IF_hrdata;
+                    ahbso.hready         <= AG_IF_hready;
+                    ahbso.hresp          <= AG_IF_hresp;       
+                    ahbso.hirq           <= AG_IF_hirq;
+                    ahbso.hsplit         <= AG_IF_hsplit;
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                end if;
+                
+            when AG_Buffer_Wrapper_WEST => ---------------------   Component: AHB_AG_Buffer_Wrapper_WEST
+                if AG_IF_hindex = AG_Buffer_WEST_ID and AG_IF_ahbso_WEST_valid = '1' then      -- check ID
+                    ahbso.hrdata         <= AG_IF_hrdata;
+                    ahbso.hready         <= AG_IF_hready;
+                    ahbso.hresp          <= AG_IF_hresp;       
+                    ahbso.hirq           <= AG_IF_hirq;
+                    ahbso.hsplit         <= AG_IF_hsplit;
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                end if;
+                
+            when AG_Buffer_Wrapper_EAST => ---------------------   Component: AHB_AG_Buffer_Wrapper_EAST
+                if AG_IF_hindex = AG_Buffer_EAST_ID and AG_IF_ahbso_EAST_valid = '1' then      -- check ID
+                    ahbso.hrdata         <= AG_IF_hrdata;
+                    ahbso.hready         <= AG_IF_hready;
+                    ahbso.hresp          <= AG_IF_hresp;       
+                    ahbso.hirq           <= AG_IF_hirq;
+                    ahbso.hsplit         <= AG_IF_hsplit;
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                end if;
+                
+            when top_hardware_interface_addr => --------------------- Component: top_hardware_interface       
+                if HwInterFace_IF_pindex = top_hw_interface_ID then      -- check ID
+                    ahbso.hrdata         <= HwInterFace_IF_prdata;
+                    ahbso.hready         <= '1';
+                    ahbso.hresp          <= (others => '0');
+                    ahbso.hirq           <= HwInterFace_IF_pirq;
+                    ahbso.hsplit         <= (others => '0');
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                
+            when reconfig_registers_addr => ---------------------     Component: reconfig_registers     
+                if ReconfReg_IF_pindex = reconfig_registers_ID then      -- check ID
+                    ahbso.hrdata         <= ReconfReg_IF_prdata;
+                    ahbso.hready         <= '1';
+                    ahbso.hresp          <= (others => '0');
+                    ahbso.hirq           <= ReconfReg_IF_pirq;
+                    ahbso.hsplit         <= (others => '0');
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+                
+            when gc_apb_slave_mem_wrapper_addr => ---------------------     Component: gc_apb_slave_mem_wrapper
+                if gc_IF_pindex = gc_apb_slave_mem_wrapper_ID then      -- check ID
+                    ahbso.hrdata         <= gc_IF_prdata;
+                    ahbso.hready         <= '1';
+                    ahbso.hresp          <= (others => '0');
+                    ahbso.hirq           <= gc_IF_pirq;
+                    ahbso.hsplit         <= (others => '0');
+                    ahbso.hconfig        <= AMBA_IF_CONFIG;
+                    ahbso.hindex         <= hindex;
+ 
+            when others =>
+                ahbso.hrdata         <= (others => '0');
+                ahbso.hready         <= '0';
+                ahbso.hresp          <= "00";       -- status: okay
+                ahbso.hirq           <= (others => '0');
+                ahbso.hsplit         <= (others => '0');
+                ahbso.hconfig        <= AMBA_IF_CONFIG;
+                ahbso.hindex         <= hindex;
+        end case;        
+    end process;
         
 end Behavioral; 
 
