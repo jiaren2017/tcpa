@@ -15,8 +15,9 @@ use gaisler.misc.all;
 
 entity test_tcpa_comp is
     generic(
-        comp_address: std_logic_vector(31 downto 0);
-        index : integer
+        sum_component  : integer;         		-- total number of components
+        comp_address: std_logic_vector(31 downto 0);   	-- component address
+        index : integer                     		-- component index
     );
     port(
         -- Input Signals from Bus system to component
@@ -36,7 +37,7 @@ entity test_tcpa_comp is
         COMP_IF_hresp      : out std_logic_vector(1 downto 0);   -- response type
         COMP_IF_hrdata     : out std_logic_vector(31 downto 0);  -- read data bus
         COMP_IF_hsplit     : out std_logic_vector(15 downto 0);  -- split completion
-        COMP_IF_hirq       : out std_ulogic;                     -- interrupt bus
+        COMP_IF_hirq       : out std_ulogic;   -- interrupt bus
         COMP_IF_index      : out integer                      -- interrupt bus
         );
 end entity test_tcpa_comp;
@@ -73,6 +74,8 @@ begin
                     if IF_COMP_hwrite = '1' then                -- write signal
                         intern_haddr    <= IF_COMP_haddr;
                         intern_hwdata   <= IF_COMP_hwdata;
+                        COMP_IF_hready  <= '1';                 -- write finished sent to amba_IF
+            
                     else                                        -- read signal
                         if intern_haddr = IF_COMP_haddr then    -- check the address of data
                             COMP_IF_hready  <= '1';                
@@ -80,7 +83,7 @@ begin
                             COMP_IF_hrdata  <= intern_hwdata;
                             COMP_IF_hsplit  <= (others => '0');
                             COMP_IF_hirq    <= '0';
-                            COMP_IF_index   <= index;
+                            COMP_IF_index   <= index;            -- diagnose
                         end if;
                     end if;
                 end if;

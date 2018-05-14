@@ -33,7 +33,7 @@ entity amba_interface is    --   test ONLY the connectivity of amba_interface wi
         ahb_rstn        : in  std_ulogic;
         ahbsi           : in  ahb_slv_in_type;
         -- Output signals from AMBA Interface to Bus-System
-        ahbso           : out ahb_slv_out_type;
+        ahbso           : out ahb_slv_out_type
         );
 end entity amba_interface;
 
@@ -42,6 +42,7 @@ architecture Behavioral of amba_interface is
 ---------------------------------------  component declaration
 component test_tcpa_comp is
     generic(
+        sum_component  : integer;         		-- total number of components
         comp_address: std_logic_vector(31 downto 0);
         index : integer
         );
@@ -63,12 +64,13 @@ component test_tcpa_comp is
         COMP_IF_hresp      : out std_logic_vector(1 downto 0);   -- response type
         COMP_IF_hrdata     : out std_logic_vector(31 downto 0);  -- read data bus
         COMP_IF_hsplit     : out std_logic_vector(15 downto 0);  -- split completion
-        COMP_IF_hirq       : out std_ulogic;                      -- interrupt bus
+        COMP_IF_hirq       : out std_ulogic;   -- interrupt bus
         COMP_IF_index      : out integer                      -- interrupt bus
         );
 end component test_tcpa_comp;
 
----------------------------------------  signal declaration
+---------------------------------------  signal declarationsim:/testbench/d3/amba_if/test_tcpa_comp_i/IF_COMP_hready
+
 
     -- Signals from AMBA Interface to component
     signal IF_COMP_hsel       :  std_ulogic;                    -- slave select
@@ -82,9 +84,11 @@ end component test_tcpa_comp;
     signal COMP_IF_hready     :  std_ulogic;                     -- transfer done
     signal COMP_IF_hresp      :  std_logic_vector(1 downto 0);   -- response type
     signal COMP_IF_hrdata     :  std_logic_vector(31 downto 0);  -- read data bus
-    signal COMP_IF_hsplit     :  std_logic_vector(15 downto 0);  -- split completion
-    signal COMP_IF_hirq       :  std_ulogic                      -- interrupt bus
-    signal COMP_IF_index      :  integer                      -- only for diagnose
+    signal COMP_IF_hsplit     :  std_logic_vector(15 downto 0);  -- split completionsim:/testbench/d3/amba_if/test_tcpa_comp_i/COMP_IF_hready
+
+    signal COMP_IF_hirq       :  std_ulogic;   -- interrupt bus
+    signal COMP_IF_index      :  integer;                      -- only for diagnose
+--    signal address_test       : std_logic_vector(31 downto 0) := TEST_COMPONENT_ADDRESS;
 
 
 	constant SLV_CONFIG : ahb_config_type := (
@@ -109,6 +113,7 @@ begin
 ---------------------------------------------------   Initiation of test_tcpa_comp
     test_tcpa_comp_i : test_tcpa_comp
     generic map(
+	sum_component => 2**COMP_NUM_POWER,
         comp_address => TEST_COMPONENT_ADDRESS, 
         index => TEST_COMPONENT_ID)
     port map(
@@ -137,6 +142,10 @@ begin
     addr_srl   <= to_stdlogicvector(to_bitvector(addr_mask) srl COMP_SIZE);
     addr_array_index <= to_integer(unsigned(addr_srl));  
     
+
+
+
+
 -----------------------------------------------------------------  generate address - array
     gen_addr_array : process(ahb_clk, ahb_rstn)
     begin
@@ -170,49 +179,73 @@ begin
 -----------------------------------------------------------------  configure the output signals to component   
     output_to_comp: process (IF_component_addr)      
     begin
-        case IF_component_addr is
-            when TEST_COMPONENT_ADDRESS =>  ---------------------        Component: RBuffer_hirq       
+--        case IF_component_addr is
+--            when TEST_COMPONENT_ADDRESS =>  ---------------------  Error:  Choice in CASE statement alternative must be locally static !!!  Solution: use "if statement"            
+
+	if IF_component_addr = TEST_COMPONENT_ADDRESS then
+
                 IF_COMP_hready    <=  ahbsi.hready;
                 IF_COMP_hsel      <=  '1';
                 IF_COMP_haddr     <=  ahbsi.haddr;
                 IF_COMP_hwrite    <=  ahbsi.hwrite;
                 IF_COMP_htrans    <=  ahbsi.htrans;
                 IF_COMP_hwdata    <=  ahbsi.hwdata;
-                
-            when others =>
+        else        
                 IF_COMP_hready    <=  '0';
                 IF_COMP_hsel      <=  '0';
                 IF_COMP_haddr     <=  (others=>'0');
                 IF_COMP_hwrite    <=  '0';
                 IF_COMP_htrans    <=  (others=>'0');
                 IF_COMP_hwdata    <=  (others=>'0');
-        end case;        
+      
+	end if;
     end process;
             
 -----------------------------------------------------------------  configure the output signals to bus   
-    output_to_bus: process (IF_component_addr)      
-    begin
-        case IF_component_addr is
-            when TEST_COMPONENT_ADDRESS =>  ---------------------        Component: RBuffer_hirq       
-                if COMP_IF_index = TEST_COMPONENT_ID then
-                    ahbso.hrdata         <= COMP_IF_hrdata;
-                    ahbso.hready         <= COMP_IF_hready;
-                    ahbso.hresp          <= COMP_IF_hresp;       
-                    ahbso.hirq           <= COMP_IF_hirq;
-                    ahbso.hsplit         <= COMP_IF_hsplit;
-                    ahbso.hconfig        <= SLV_CONFIG;
-                    ahbso.hindex         <= hindex;
-                end if;
-                
-            when others =>
-                ahbso.hrdata         <= (others => '0');
-                ahbso.hready         <= '0';
-                ahbso.hresp          <= "00";       -- status: okay
-                ahbso.hirq           <= (others => '0');
-                ahbso.hsplit         <= (others => '0');
-                ahbso.hconfig        <= SLV_CONFIG;
-                ahbso.hindex         <= hindex;
-        end case;        
+    output_to_bus: process (ahbsi, IF_component_addr, COMP_IF_index, COMP_IF_hready)      
+    begin	
+	if ahbsi.hwrite = '1' then				     -- write data				
+		if IF_component_addr = TEST_COMPONENT_ADDRESS then   -- check write data to which component
+		        ahbso.hrdata         <= (others => '0');
+		        ahbso.hready         <= COMP_IF_hready;       	-- inform bus:  write OK!
+		        ahbso.hresp          <= COMP_IF_hresp;          -- status
+		        ahbso.hirq           <= (others => '0');
+		        ahbso.hsplit         <= COMP_IF_hsplit;
+		        ahbso.hconfig        <= SLV_CONFIG;
+		        ahbso.hindex         <= hindex;
+		else
+		        ahbso.hrdata         <= (others => '0');
+		        ahbso.hready         <= '0';       	          -- inform bus:  write OK!
+		        ahbso.hresp          <= (others => '0');          -- status
+		        ahbso.hirq           <= (others => '0');
+		        ahbso.hsplit         <= (others => '0');
+		        ahbso.hconfig        <= SLV_CONFIG;
+		        ahbso.hindex         <= hindex;
+		end if;
+
+	else								-- read data
+		
+		if IF_component_addr = TEST_COMPONENT_ADDRESS then      -- check from which component data will be read
+		        if COMP_IF_index = TEST_COMPONENT_ID then       -- check whether the data is valid bz checking the component index
+		            ahbso.hrdata         <= COMP_IF_hrdata;
+		            ahbso.hready         <= COMP_IF_hready;
+			    ahbso.hresp          <= COMP_IF_hresp;          -- status
+		            ahbso.hirq           <= (others => '0');
+		            ahbso.hsplit         <= COMP_IF_hsplit;
+		            ahbso.hconfig        <= SLV_CONFIG;
+		            ahbso.hindex         <= hindex;
+		        end if;
+
+		else        
+		        ahbso.hrdata         <= (others => '0');
+		        ahbso.hready         <= '0';
+		        ahbso.hresp          <= (others => '0');       -- status: okay
+		        ahbso.hirq           <= (others => '0');
+		        ahbso.hsplit         <= (others => '0');
+		        ahbso.hconfig        <= SLV_CONFIG;
+		        ahbso.hindex         <= hindex;
+		end if;
+	end if;
     end process;
 
         

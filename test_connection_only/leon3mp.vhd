@@ -105,23 +105,7 @@ architecture rtl of leon3mp is
   signal rstraw             : std_logic;
   signal lock               : std_logic;
 
----------------------------------------------------------------------------------------
-  -- -- signals from amba_interface to test_tcpa_component
-  
-  -- signal sig_IF_COMP_hsel       :  std_ulogic;                    -- slave select
-  -- signal sig_IF_COMP_haddr      :  std_logic_vector(31 downto 0); -- address bus (byte)
-  -- signal sig_IF_COMP_hwrite     :  std_ulogic; -- read/write
-  -- signal sig_IF_COMP_htrans     :  std_logic_vector(1 downto 0);  -- transfer type
-  -- signal sig_IF_COMP_hwdata     :  std_logic_vector(31 downto 0); -- write data bus
-  -- signal sig_IF_COMP_hready     :  std_ulogic; -- transfer done
-  
-  -- -- signal from test_tcpa_component to amba_interface
-  -- signal sig_COMP_IF_hready     :  std_ulogic; -- transfer done
-  -- signal sig_COMP_IF_hresp      :  std_logic_vector(1 downto 0);   -- response type
-  -- signal sig_COMP_IF_hrdata     :  std_logic_vector(31 downto 0);  -- read data bus
-  -- signal sig_COMP_IF_hsplit     :  std_logic_vector(15 downto 0);  -- split completion
-  -- signal sig_COMP_IF_hirq       :  std_ulogic;                      -- interrupt bus
------------------------------------------------------------------------------------------  
+
   
   
   
@@ -174,11 +158,11 @@ begin
   amba_if: entity work.amba_interface  
     generic map (
         hindex => 7, 
-        haddr => 16#300#, 
+        haddr => 16#300#,         -- address of amba_interface: 0x3000 0000
         hmask => 16#FC0#, 
         hirq => 0, 
         TEST_COMPONENT_ADDRESS => x"01000000", 
-        TEST_COMPONENT_ID => 13, 
+        TEST_COMPONENT_ID => 15, 
         COMP_NUM_POWER => 4, 
         COMP_SIZE => 22)
     port map (clkm, rstn, ahbsi, ahbso(7));  
@@ -190,25 +174,7 @@ begin
 --  component_9:  0x02000000	component_10:  0x02400000	component_11:  0x02800000	component_12:  0x02C00000
 --  component_13:  0x03000000	component_14:  0x03400000	component_15:  0x03800000	component_16:  0x03C00000
 
----------  test connection between amba_interface and component  ---------------------- 
 
-  -- tcpa_comp: entity work.test_tcpa_comp  
-    -- generic map (comp_address => x"01000000")
-    -- port map (
-        -- clk => clkm, 
-        -- rstn => rstn, 
-        -- IF_COMP_hsel => sig_IF_COMP_hsel, 
-        -- IF_COMP_haddr => sig_IF_COMP_haddr, 
-        -- IF_COMP_hwrite => sig_IF_COMP_hwrite,
-        -- IF_COMP_htrans => sig_IF_COMP_htrans,
-        -- IF_COMP_hwdata => sig_IF_COMP_hwdata,
-        -- IF_COMP_hready => sig_IF_COMP_hready,
-        -- COMP_IF_hready => sig_COMP_IF_hready,  
-        -- COMP_IF_hresp =>  sig_COMP_IF_hresp,
-        -- COMP_IF_hrdata => sig_COMP_IF_hrdata, 
-        -- COMP_IF_hsplit => sig_COMP_IF_hsplit,  
-        -- COMP_IF_hirq =>   sig_COMP_IF_hirq
-    -- );  
 
 
 ----------------------------------------------------------------------
