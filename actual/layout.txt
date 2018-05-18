@@ -1,0 +1,8 @@
+2^4 == 16 components   -- 2^22 == 4 MByte for each component
+
+    
+--  there are 2^COMP_NUM_POWER = 16 Components reserved for application with individual addresses as follows: 
+--  component_0:  0x00000000	component_1:  0x00400000	component_2:  0x00800000	component_3:  0x00C00000
+--  component_4:  0x01000000	component_5:  0x01400000	component_6:  0x01800000	component_7:  0x01C00000
+--  component_8:  0x02000000	component_9:  0x02400000	component_10:  0x02800000	component_11:  0x02C00000
+--  component_12:  0x03000000	component_13:  0x03400000	component_14:  0x03800000	component_15:  0x03C00000
